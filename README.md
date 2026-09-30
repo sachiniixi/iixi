@@ -1,10 +1,10 @@
-# IIXI
+# IIXI V2
 
-A tiny interactive internet experiment for iixi.in.
+Interactive "useless website" experiment for iixi.in.
 
-## Files
-- index.html — page structure
-- style.css — visual design
-- script.js — interaction
+Upload these files to the root of the GitHub Pages repository:
+- index.html
+- style.css
+- script.js
 
-No frameworks, no paid services, no build step.
+No framework, build step, API, database, or paid service required.
