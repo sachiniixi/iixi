@@ -1,51 +1,1207 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#070707">
-<meta name="description" content="IIXI — pointless internet experiments. Waste time responsibly.">
-<meta property="og:title" content="IIXI — No Purpose / 2026">
-<meta property="og:description" content="A collection of pointless internet experiments. Waste time responsibly.">
-<title>IIXI — No Purpose / 2026</title>
-<link rel="stylesheet" href="style.css?v=60">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IIXI — No Purpose</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#070707;
+  --fg:#f4f2ec;
+  --muted:#777;
+  --acid:#b4ff2c;
+  --line:#252525;
+}
+
+*{box-sizing:border-box}
+
+html,body{
+  width:100%;
+  height:100%;
+  margin:0;
+}
+
+body{
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:"Space Grotesk",sans-serif;
+  transition:background .6s,color .6s;
+}
+
+button{
+  font:inherit;
+}
+
+.grain{
+  position:fixed;
+  inset:-50%;
+  pointer-events:none;
+  z-index:50;
+  opacity:.065;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:noise .15s steps(2) infinite;
+}
+
+@keyframes noise{
+  0%{transform:translate(0)}
+  25%{transform:translate(2%,-1%)}
+  50%{transform:translate(-1%,2%)}
+  75%{transform:translate(1%,1%)}
+  100%{transform:translate(-2%,-2%)}
+}
+
+.scanlines{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:45;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent 0 3px,
+    rgba(255,255,255,.012) 4px
+  );
+  mix-blend-mode:screen;
+}
+
+.cursor-glow{
+  position:fixed;
+  width:520px;
+  height:520px;
+  border-radius:50%;
+  pointer-events:none;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(
+    circle,
+    rgba(180,255,44,.11),
+    transparent 65%
+  );
+  z-index:0;
+}
+
+header{
+  position:fixed;
+  left:32px;
+  right:32px;
+  top:27px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  z-index:20;
+}
+
+.logo{
+  background:none;
+  border:0;
+  color:#fff;
+  font-size:24px;
+  font-weight:700;
+  letter-spacing:-2px;
+  cursor:pointer;
+  padding:0;
+}
+
+.logo span{
+  opacity:.4;
+}
+
+.header-actions{
+  display:flex;
+  gap:8px;
+}
+
+.tiny{
+  border:1px solid #252525;
+  background:#0c0c0c;
+  color:#777;
+  border-radius:999px;
+  padding:8px 11px;
+  cursor:pointer;
+  font:10px "DM Mono",monospace;
+  letter-spacing:1px;
+  transition:.2s;
+}
+
+.tiny:hover{
+  color:#fff;
+  border-color:#555;
+}
+
+main{
+  height:100%;
+  position:relative;
+}
+
+.experiment{
+  position:absolute;
+  left:32px;
+  top:50%;
+  transform:rotate(-90deg) translateX(-50%);
+  transform-origin:left top;
+  font:11px "DM Mono",monospace;
+  letter-spacing:3px;
+  color:#555;
+}
+
+.counter{
+  position:absolute;
+  right:6%;
+  top:11%;
+  font-size:clamp(100px,18vw,260px);
+  font-weight:700;
+  line-height:.8;
+  color:#111;
+  letter-spacing:-.09em;
+  user-select:none;
+}
+
+.visit{
+  position:absolute;
+  right:32px;
+  bottom:27px;
+  font:9px "DM Mono",monospace;
+  letter-spacing:2px;
+  color:#333;
+}
+
+.scene{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:min(1000px,90vw);
+  text-align:center;
+  transform:translate(-50%,-47%);
+  transition:
+    transform .7s cubic-bezier(.2,.8,.2,1),
+    opacity .4s;
+}
+
+.kicker{
+  font:500 11px "DM Mono",monospace;
+  letter-spacing:4px;
+  color:#777;
+  margin-bottom:22px;
+}
+
+h1{
+  font-size:clamp(70px,11vw,155px);
+  line-height:.82;
+  letter-spacing:-.075em;
+  margin:0;
+  font-weight:700;
+}
+
+h1 strong{
+  color:var(--acid);
+}
+
+p{
+  font-size:18px;
+  color:#999;
+  margin:28px auto 32px;
+  max-width:620px;
+  line-height:1.5;
+}
+
+.action-row{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.action{
+  position:relative;
+  border:1px solid #393939;
+  background:#111;
+  color:#fff;
+  border-radius:999px;
+  padding:17px 23px 17px 27px;
+  cursor:pointer;
+  font:500 12px "DM Mono",monospace;
+  letter-spacing:2px;
+  transition:.25s;
+}
+
+.action:hover:not(:disabled){
+  border-color:var(--acid);
+  box-shadow:0 0 35px rgba(180,255,44,.13);
+  transform:translateY(-2px);
+}
+
+.action:disabled{
+  opacity:.55;
+  cursor:wait;
+}
+
+.action i{
+  font-style:normal;
+  font-size:16px;
+  margin-left:22px;
+}
+
+.action.holding{
+  border-color:var(--acid);
+  box-shadow:0 0 45px rgba(180,255,44,.2);
+  transform:scale(1.04);
+}
+
+.timer{
+  margin-top:34px;
+  font:10px "DM Mono",monospace;
+  letter-spacing:2px;
+  color:#3e3e3e;
+}
+
+.achievement{
+  height:17px;
+  margin-top:12px;
+  font:9px "DM Mono",monospace;
+  letter-spacing:2px;
+  color:var(--acid);
+  opacity:0;
+  transform:translateY(4px);
+  transition:.25s;
+}
+
+.achievement.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.edge{
+  position:absolute;
+  bottom:70px;
+  font:10px "DM Mono",monospace;
+  letter-spacing:2px;
+  color:#444;
+}
+
+.edge-left{left:32px}
+.edge-right{right:32px}
+
+.progress{
+  position:absolute;
+  left:32px;
+  right:32px;
+  bottom:27px;
+  height:1px;
+  background:#1e1e1e;
+}
+
+.progress span{
+  display:block;
+  height:100%;
+  width:0;
+  background:var(--acid);
+  transition:width .7s;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(10px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:40;
+}
+
+.overlay.show{
+  display:flex;
+}
+
+.overlay-box{
+  width:min(520px,88vw);
+  border:1px solid #303030;
+  background:#0b0b0b;
+  padding:40px;
+  text-align:center;
+}
+
+.overlay-box small{
+  font:10px "DM Mono",monospace;
+  letter-spacing:3px;
+  color:#666;
+}
+
+.overlay-box h2{
+  font-size:42px;
+  letter-spacing:-.05em;
+  margin:18px 0 8px;
+}
+
+.overlay-box p{
+  margin:0 0 25px;
+  font-size:15px;
+}
+
+.overlay-box button{
+  border:1px solid #444;
+  background:#f2f0ea;
+  color:#080808;
+  padding:12px 25px;
+  border-radius:999px;
+  cursor:pointer;
+  font:600 11px "DM Mono",monospace;
+  letter-spacing:2px;
+}
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:75px;
+  transform:translate(-50%,15px);
+  opacity:0;
+  background:#f2f0ea;
+  color:#080808;
+  padding:10px 16px;
+  border-radius:5px;
+  font:10px "DM Mono",monospace;
+  z-index:60;
+  transition:.3s;
+  pointer-events:none;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+.glitch{
+  animation:glitch .22s steps(2) 3;
+}
+
+@keyframes glitch{
+  0%{transform:translate(-50%,-47%)}
+  30%{
+    transform:translate(calc(-50% + 12px),-47%);
+    filter:hue-rotate(40deg)
+  }
+  60%{transform:translate(calc(-50% - 8px),-47%)}
+  100%{transform:translate(-50%,-47%)}
+}
+
+body.secret{
+  background:var(--acid);
+  color:#050505;
+}
+
+body.secret .logo,
+body.secret .experiment,
+body.secret .edge,
+body.secret .timer,
+body.secret .visit,
+body.secret .tiny{
+  color:#050505;
+}
+
+body.secret .tiny{
+  border-color:rgba(0,0,0,.25);
+  background:transparent;
+}
+
+body.secret .counter{
+  color:rgba(0,0,0,.08);
+}
+
+body.secret .kicker{
+  color:#111;
+}
+
+body.secret h1 strong{
+  color:#050505;
+}
+
+body.secret p{
+  color:#222;
+}
+
+body.secret .progress{
+  background:rgba(0,0,0,.2);
+}
+
+body.secret .progress span{
+  background:#050505;
+}
+
+body.secret .action{
+  background:#050505;
+  color:#fff;
+  border-color:#050505;
+}
+
+.secret .achievement{
+  color:#050505;
+}
+
+body.ending h1 strong{
+  color:#fff;
+}
+
+.still .cursor-glow{
+  opacity:0;
+}
+
+.still .action{
+  border-color:#777;
+}
+
+@media(max-width:650px){
+
+  header{
+    left:20px;
+    right:20px;
+    top:20px;
+  }
+
+  .tiny{
+    padding:7px 8px;
+    font-size:8px;
+  }
+
+  .experiment{
+    left:20px;
+  }
+
+  .counter{
+    right:3%;
+    top:17%;
+  }
+
+  .visit{
+    right:20px;
+    bottom:20px;
+  }
+
+  h1{
+    font-size:clamp(62px,18vw,108px);
+  }
+
+  p{
+    font-size:16px;
+  }
+
+  .edge-left{left:20px}
+  .edge-right{right:20px}
+
+  .progress{
+    left:20px;
+    right:20px;
+  }
+
+  .header-actions{
+    gap:5px;
+  }
+
+  .action{
+    padding:14px 18px 14px 21px;
+  }
+}
+</style>
 </head>
+
 <body>
-<div class="grain"></div><div class="cursor-glow"></div><div class="scanlines"></div>
+
+<div class="cursor-glow" id="cursorGlow"></div>
+<div class="grain"></div>
+<div class="scanlines"></div>
+
 <header>
-  <button class="logo" id="logo" aria-label="Reset IIXI">IIXI<span>.</span></button>
+  <button class="logo" id="logoBtn">IIXI<span>.</span></button>
+
   <div class="header-actions">
     <button class="tiny" id="randomBtn">RANDOM ↗</button>
     <button class="tiny" id="shareBtn">SHARE ↗</button>
   </div>
 </header>
+
 <main>
-  <div class="experiment" id="experiment">EXPERIMENT 00</div>
-  <div class="counter" id="counter">00</div>
-  <div class="visit" id="visit">LOCAL VISITOR 001</div>
-  <section class="scene" id="scene">
-    <div class="kicker" id="kicker">AN INTERNET EXPERIMENT</div>
-    <h1 id="title">What is<br><strong>IIXI?</strong></h1>
-    <p id="copy">A website with absolutely no useful purpose.</p>
-    <div class="action-row" id="actionRow">
-      <button class="action" id="action"><span id="actionText">FIND OUT</span><i id="actionIcon">↗</i></button>
-    </div>
-    <div class="timer" id="timer">TIME WASTED 00:00</div>
-    <div class="achievement" id="achievement" aria-live="polite"></div>
-  </section>
-  <div class="edge edge-left" id="edgeLeft">NO USEFUL INFORMATION</div>
-  <div class="edge edge-right" id="edgeRight">KEEP GOING →</div>
-  <div class="progress"><span id="progress"></span></div>
-</main>
-<div class="overlay" id="overlay" aria-hidden="true">
-  <div class="overlay-box">
-    <small id="overlaySmall">IIXI NOTICE</small>
-    <h2 id="overlayTitle">Are you still here?</h2>
-    <p id="overlayText">That is statistically unnecessary.</p>
-    <button id="overlayButton">YES</button>
+
+  <div class="experiment" id="experimentLabel">
+    EXPERIMENT 00
   </div>
+
+  <div class="counter" id="counter">
+    00
+  </div>
+
+  <div class="visit" id="visit">
+    LOCAL VISITOR 001
+  </div>
+
+  <section class="scene" id="scene">
+
+    <div class="kicker" id="kicker">
+      AN INTERNET EXPERIMENT
+    </div>
+
+    <h1 id="title">
+      What is <strong>IIXI?</strong>
+    </h1>
+
+    <p id="description">
+      Nobody knows. Maybe you can find out.
+    </p>
+
+    <div class="action-row" id="actions"></div>
+
+    <div class="timer" id="timer">
+      TIME WASTED 00:00
+    </div>
+
+    <div class="achievement" id="achievement"></div>
+
+  </section>
+
+  <div class="edge edge-left" id="edgeLeft">
+    WELCOME.
+  </div>
+
+  <div class="edge edge-right" id="edgeRight">
+    NOTHING USEFUL HERE.
+  </div>
+
+  <div class="progress">
+    <span id="progressBar"></span>
+  </div>
+
+</main>
+
+<div class="overlay" id="overlay">
+
+  <div class="overlay-box">
+
+    <small>IIXI INTERRUPTION</small>
+
+    <h2 id="overlayTitle">Are you sure?</h2>
+
+    <p id="overlayText">
+      This will probably accomplish nothing.
+    </p>
+
+    <button id="overlayButton">
+      CONTINUE
+    </button>
+
+  </div>
+
 </div>
+
 <div class="toast" id="toast"></div>
-<script src="script.js?v=60" defer></script>
+
+
+<script>
+
+/* =========================================================
+   IIXI — EXPERIMENT ENGINE
+   ========================================================= */
+
+const experiments = [
+
+  {
+    title: "What is <strong>IIXI?</strong>",
+    description: "Nobody knows. Maybe you can find out.",
+    kicker: "AN INTERNET EXPERIMENT",
+    button: "FIND OUT",
+    buttonIcon: "→",
+    duration: 0
+  },
+
+  {
+    title: "Are you <strong>sure?</strong>",
+    description: "There is absolutely nothing useful here.",
+    kicker: "EXPERIMENT 01",
+    button: "I'M SURE",
+    buttonIcon: "→",
+    duration: 0
+  },
+
+  {
+    title: "This is <strong>pointless.</strong>",
+    description: "You already knew that. Yet here you are.",
+    kicker: "EXPERIMENT 02",
+    button: "CONTINUE",
+    buttonIcon: "→",
+    duration: 0
+  },
+
+  {
+    title: "Please <strong>wait.</strong>",
+    description: "We are carefully calculating nothing. This is important.",
+    kicker: "EXPERIMENT 03",
+    button: "CONTINUE",
+    buttonIcon: "…",
+    duration: 3000
+  },
+
+  {
+    title: "Still <strong>waiting?</strong>",
+    description: "Excellent. Your patience has achieved absolutely nothing.",
+    kicker: "EXPERIMENT 04",
+    button: "I CAN WAIT",
+    buttonIcon: "→",
+    duration: 0
+  },
+
+  {
+    title: "This is <strong>awkward.</strong>",
+    description: "You have spent real time on this.",
+    kicker: "EXPERIMENT 05",
+    button: "I ACCEPT",
+    buttonIcon: "↗",
+    duration: 0
+  },
+
+  {
+    title: "You are <strong>close.</strong>",
+    description: "Probably. We don't actually know.",
+    kicker: "EXPERIMENT 06",
+    button: "KEEP GOING",
+    buttonIcon: "→",
+    duration: 0
+  },
+
+  {
+    title: "Maybe there is <strong>something.</strong>",
+    description: "There isn't.",
+    kicker: "EXPERIMENT 07",
+    button: "CHECK",
+    buttonIcon: "→",
+    duration: 0
+  },
+
+  {
+    title: "Almost <strong>there.</strong>",
+    description: "This is becoming unnecessarily long.",
+    kicker: "EXPERIMENT 08",
+    button: "NEXT",
+    buttonIcon: "→",
+    duration: 0
+  },
+
+  {
+    title: "One last <strong>thing.</strong>",
+    description: "Promise.",
+    kicker: "EXPERIMENT 09",
+    button: "FINISH",
+    buttonIcon: "→",
+    duration: 0
+  },
+
+  {
+    title: "Nothing <strong>happened.</strong>",
+    description: "Congratulations. You successfully accomplished nothing.",
+    kicker: "THE END",
+    button: "START OVER",
+    buttonIcon: "↻",
+    duration: 0
+  }
+
+];
+
+
+/* =========================================================
+   ELEMENTS
+   ========================================================= */
+
+const title = document.getElementById("title");
+const description = document.getElementById("description");
+const kicker = document.getElementById("kicker");
+const actions = document.getElementById("actions");
+
+const experimentLabel =
+  document.getElementById("experimentLabel");
+
+const counter =
+  document.getElementById("counter");
+
+const timer =
+  document.getElementById("timer");
+
+const achievement =
+  document.getElementById("achievement");
+
+const progressBar =
+  document.getElementById("progressBar");
+
+const edgeLeft =
+  document.getElementById("edgeLeft");
+
+const edgeRight =
+  document.getElementById("edgeRight");
+
+const scene =
+  document.getElementById("scene");
+
+const cursorGlow =
+  document.getElementById("cursorGlow");
+
+const randomBtn =
+  document.getElementById("randomBtn");
+
+const shareBtn =
+  document.getElementById("shareBtn");
+
+const logoBtn =
+  document.getElementById("logoBtn");
+
+const toast =
+  document.getElementById("toast");
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let currentExperiment = 0;
+
+let startTime = Date.now();
+
+let timerInterval = null;
+
+let experimentTimer = null;
+
+let visitor =
+  Number(localStorage.getItem("iixiVisitor") || 0) + 1;
+
+localStorage.setItem(
+  "iixiVisitor",
+  visitor
+);
+
+document.getElementById("visit").textContent =
+  "LOCAL VISITOR " +
+  String(visitor).padStart(3,"0");
+
+
+/* =========================================================
+   TIMER
+   ========================================================= */
+
+function updateTimer(){
+
+  const elapsed =
+    Math.floor((Date.now() - startTime) / 1000);
+
+  const minutes =
+    String(Math.floor(elapsed / 60)).padStart(2,"0");
+
+  const seconds =
+    String(elapsed % 60).padStart(2,"0");
+
+  timer.textContent =
+    `TIME WASTED ${minutes}:${seconds}`;
+}
+
+timerInterval =
+  setInterval(updateTimer,1000);
+
+
+/* =========================================================
+   SHOW EXPERIMENT
+   ========================================================= */
+
+function showExperiment(index){
+
+  clearTimeout(experimentTimer);
+
+  currentExperiment =
+    Math.max(
+      0,
+      Math.min(index, experiments.length - 1)
+    );
+
+  const exp =
+    experiments[currentExperiment];
+
+  scene.classList.remove("glitch");
+
+  void scene.offsetWidth;
+
+  scene.classList.add("glitch");
+
+  title.innerHTML =
+    exp.title;
+
+  description.textContent =
+    exp.description;
+
+  kicker.textContent =
+    exp.kicker;
+
+  experimentLabel.textContent =
+    `EXPERIMENT ${String(currentExperiment).padStart(2,"0")}`;
+
+  counter.textContent =
+    String(currentExperiment).padStart(2,"0");
+
+  progressBar.style.width =
+    `${(currentExperiment / 10) * 100}%`;
+
+  achievement.textContent = "";
+  achievement.classList.remove("show");
+
+  document.body.classList.remove("ending");
+  document.body.classList.remove("secret");
+  document.body.classList.remove("still");
+
+  actions.innerHTML = "";
+
+  /* END SCREEN */
+
+  if(currentExperiment === 10){
+
+    document.body.classList.add("ending");
+    document.body.classList.add("secret");
+
+    edgeLeft.textContent =
+      "THE END";
+
+    edgeRight.textContent =
+      "THANKS FOR WASTING YOUR TIME WITH IIXI.";
+
+    const button =
+      createButton(
+        exp.button,
+        exp.buttonIcon
+      );
+
+    button.addEventListener("click", () => {
+
+      startTime = Date.now();
+
+      showExperiment(0);
+
+    });
+
+    actions.appendChild(button);
+
+    return;
+  }
+
+
+  edgeLeft.textContent =
+    currentExperiment === 0
+      ? "WELCOME."
+      : `EXPERIMENT ${String(currentExperiment).padStart(2,"0")}`;
+
+  edgeRight.textContent =
+    currentExperiment === 3
+      ? "CALCULATING 0 USEFUL THOUGHTS."
+      : "NO USEFUL INFORMATION GAINED.";
+
+
+  /*
+     =====================================================
+     EXPERIMENT 03
+     =====================================================
+
+     Button appears AFTER 3 seconds.
+
+     When clicked it ALWAYS works and moves to
+     Experiment 04.
+     =====================================================
+  */
+
+  if(currentExperiment === 3){
+
+    document.body.classList.add("still");
+
+    const waitingText =
+      document.createElement("div");
+
+    waitingText.style.cssText = `
+      font:10px "DM Mono",monospace;
+      letter-spacing:2px;
+      color:#444;
+      margin-top:35px;
+    `;
+
+    waitingText.id =
+      "waitingText";
+
+    waitingText.textContent =
+      "CALCULATING...";
+
+    actions.appendChild(waitingText);
+
+
+    experimentTimer =
+      setTimeout(() => {
+
+        const old =
+          document.getElementById("waitingText");
+
+        if(old){
+          old.remove();
+        }
+
+        const button =
+          createButton(
+            "CONTINUE",
+            "→"
+          );
+
+        button.id =
+          "experiment3Continue";
+
+        button.addEventListener(
+          "click",
+          function(){
+
+            /* IMPORTANT:
+               This is the actual click handler.
+            */
+
+            this.disabled = true;
+
+            achievement.textContent =
+              "THAT TOOK LONG ENOUGH.";
+
+            achievement.classList.add("show");
+
+            setTimeout(() => {
+              showExperiment(4);
+            },700);
+
+          }
+        );
+
+        actions.appendChild(button);
+
+      },3000);
+
+    return;
+  }
+
+
+  /* =====================================================
+     NORMAL EXPERIMENT BUTTON
+     ===================================================== */
+
+  const button =
+    createButton(
+      exp.button,
+      exp.buttonIcon
+    );
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      button.disabled = true;
+
+      achievement.textContent =
+        "THAT ACCOMPLISHED NOTHING.";
+
+      achievement.classList.add("show");
+
+      setTimeout(() => {
+
+        showExperiment(
+          currentExperiment + 1
+        );
+
+      },650);
+
+    }
+  );
+
+  actions.appendChild(button);
+}
+
+
+/* =========================================================
+   BUTTON CREATOR
+   ========================================================= */
+
+function createButton(text, icon){
+
+  const button =
+    document.createElement("button");
+
+  button.className =
+    "action";
+
+  button.innerHTML =
+    `${text}<i>${icon}</i>`;
+
+  return button;
+}
+
+
+/* =========================================================
+   RANDOM
+   ========================================================= */
+
+randomBtn.addEventListener(
+  "click",
+  () => {
+
+    const random =
+      Math.floor(
+        Math.random() * 10
+      );
+
+    showExperiment(random);
+
+  }
+);
+
+
+/* =========================================================
+   SHARE
+   ========================================================= */
+
+shareBtn.addEventListener(
+  "click",
+  async () => {
+
+    const shareData = {
+      title: "IIXI",
+      text: "I wasted some time on IIXI.",
+      url: window.location.href
+    };
+
+    try{
+
+      if(
+        navigator.share
+      ){
+
+        await navigator.share(
+          shareData
+        );
+
+      }else{
+
+        await navigator.clipboard.writeText(
+          window.location.href
+        );
+
+        showToast(
+          "LINK COPIED"
+        );
+
+      }
+
+    }catch(error){
+
+      console.log(
+        "Share cancelled"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   LOGO = START OVER
+   ========================================================= */
+
+logoBtn.addEventListener(
+  "click",
+  () => {
+
+    startTime =
+      Date.now();
+
+    showExperiment(0);
+
+  }
+);
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function showToast(message){
+
+  toast.textContent =
+    message;
+
+  toast.classList.add(
+    "show"
+  );
+
+  setTimeout(() => {
+
+    toast.classList.remove(
+      "show"
+    );
+
+  },1800);
+}
+
+
+/* =========================================================
+   CURSOR GLOW
+   ========================================================= */
+
+document.addEventListener(
+  "mousemove",
+  (event) => {
+
+    cursorGlow.style.left =
+      `${event.clientX}px`;
+
+    cursorGlow.style.top =
+      `${event.clientY}px`;
+
+  }
+);
+
+
+/* =========================================================
+   KEYBOARD SUPPORT
+   ========================================================= */
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+
+    if(event.key === "Enter"){
+
+      const button =
+        document.querySelector(
+          ".action:not(:disabled)"
+        );
+
+      if(button){
+        button.click();
+      }
+
+    }
+
+    if(event.key === "r"){
+
+      showExperiment(
+        Math.floor(
+          Math.random() * 10
+        )
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+showExperiment(0);
+
+</script>
+
 </body>
 </html>
