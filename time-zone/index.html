@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Free time zone converter with live clocks. Search a city or a code like IST, CST, or MST, convert a time between two places, and see the hours when both are working. Runs in your browser.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../favicon-180.png">
+<title>Time zone converter · IIXI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap');
+:root{--bg:#070707;--fg:#f4f2ec;--acid:#b4ff2c;--line:#262626}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:"Space Grotesk",sans-serif;padding:24px 20px 40px;color-scheme:dark}
+button,input{font:inherit}
+header{display:flex;justify-content:space-between;align-items:center;max-width:960px;margin:0 auto 40px;flex-wrap:wrap;gap:12px}
+.logo{font-weight:700;font-size:22px;letter-spacing:-1px;color:#fff;text-decoration:none}
+.logo span{color:var(--acid)}
+nav a{color:#777;font:10px "DM Mono",monospace;letter-spacing:1px;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 11px;margin-left:6px}
+nav a:hover{color:#fff;border-color:#555}
+main{max-width:820px;margin:0 auto}
+h1{font-size:clamp(34px,6vw,56px);letter-spacing:-.04em;margin:0 0 10px;text-align:center}
+h2{font-size:18px;margin:34px 0 8px}
+.lead{color:#999;font-size:16px;margin:0 0 30px;line-height:1.5;text-align:center}
+.live{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 28px}
+.card{border:1px solid var(--line);border-radius:12px;background:#0d0d0d;padding:20px;text-align:center}
+.lbl{font:11px "DM Mono",monospace;letter-spacing:2px;color:#777;text-transform:uppercase}
+.lt{font:500 clamp(34px,8vw,56px)/1.1 "DM Mono",monospace;color:#fff;margin:10px 0 6px;font-variant-numeric:tabular-nums}
+.sub{color:#777;font-size:14px;line-height:1.4}
+.pairs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:0 0 22px}
+.form{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:end}
+.pw{position:relative;display:flex;flex-direction:column;gap:6px}
+.wide{grid-column:1/-1}
+.search,.row input{background:#0d0d0d;border:1px solid var(--line);color:#fff;border-radius:8px;padding:11px;font-size:15px;width:100%}
+.search:focus,.row input:focus{outline:none;border-color:var(--acid)}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.hits{display:none;position:absolute;left:0;right:0;top:100%;margin-top:6px;background:#111;border:1px solid var(--line);border-radius:8px;z-index:5;max-height:320px;overflow:auto}
+.hit{display:block;width:100%;text-align:left;background:none;border:0;color:#ddd;padding:11px 12px;font:13px "DM Mono",monospace;line-height:1.4;cursor:pointer;border-bottom:1px solid #1c1c1c}
+.hit:last-child{border-bottom:0}
+.hit:hover,.hit:focus{background:#1b1b1b;color:var(--acid);outline:none}
+.none{padding:10px 12px;color:#777;font:12px "DM Mono",monospace;line-height:1.5}
+.chip{border:1px solid #393939;background:#111;color:#fff;border-radius:999px;padding:12px 16px;font:500 11px "DM Mono",monospace;letter-spacing:1px;cursor:pointer;height:44px;white-space:nowrap}
+.chip:hover{border-color:var(--acid);color:var(--acid)}
+.result{display:flex;gap:18px;justify-content:center;align-items:center;flex-wrap:wrap;margin:26px 0 8px;padding:24px;border:1px solid var(--line);border-radius:12px;background:#0d0d0d}
+.big{font:500 40px "DM Mono",monospace;color:#fff;text-align:center}
+.big small{display:block;font:11px "DM Mono",monospace;color:#777;letter-spacing:1px;margin-top:6px;text-transform:uppercase}
+.arrow{color:var(--acid);font-size:28px}
+.overlap{color:#999;font-size:15px;line-height:1.5;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:6px}
+.cell{border:1px solid var(--line);border-radius:6px;padding:8px 0;background:#0d0d0d;font:11px "DM Mono",monospace;color:#555;text-align:center}
+.cell b{display:block;color:#ddd;font-weight:500;font-size:13px}
+.cell small{font-size:10px;color:#777}
+.cell.ok{border-color:var(--acid)}
+.cell.ok b{color:var(--acid)}
+.legend{margin-top:12px;color:#555;font:10px "DM Mono",monospace;letter-spacing:1px}
+.crosslink{display:inline-block;margin-top:26px;color:var(--acid);font:12px "DM Mono",monospace;letter-spacing:1px;text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:3px}
+.tips{margin-top:44px;text-align:left;color:#888;font-size:15px;line-height:1.6;border-top:1px solid var(--line);padding-top:24px}
+.tips h2{color:#fff;margin-top:0}
+.tips p{margin:0 0 12px}
+.tips p:last-child{margin:0}
+footer{max-width:960px;margin:40px auto 0;color:#555;font:10px "DM Mono",monospace;letter-spacing:1px;text-align:center}
+@media(max-width:700px){.form{grid-template-columns:1fr}.live{grid-template-columns:1fr}.grid{grid-template-columns:repeat(6,1fr)}.big{font-size:30px}}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="../">IIXI<span>.</span></a>
+  <nav><a href="../timer/">TIMER</a><a href="https://YOURNAME.substack.com" target="_blank" rel="noopener">NEWSLETTER ↗</a></nav>
+</header>
+<main>
+  <h1>Time zone converter</h1>
+  <p class="lead">Live clocks for two places, a converter, and the hours when both are working. Runs in your browser.</p>
+  <div class="live">
+    <div class="card"><div class="lbl">From</div><div class="lt" id="liveFrom">--:--:--</div><div class="sub" id="liveFromDate"></div></div>
+    <div class="card"><div class="lbl">To</div><div class="lt" id="liveTo">--:--:--</div><div class="sub" id="liveToDate"></div></div>
+  </div>
+  <div class="pairs" id="pairs"></div>
+  <div class="form">
+    <div class="pw"><span class="lbl">From</span><input class="search" id="fromQ" placeholder="City or code, e.g. Boston or IST" autocomplete="off"><div class="hits" id="fromHits"></div></div>
+    <button class="chip" id="swap" aria-label="Swap the two places">⇄ SWAP</button>
+    <div class="pw"><span class="lbl">To</span><input class="search" id="toQ" placeholder="City or code, e.g. Chicago or CST" autocomplete="off"><div class="hits" id="toHits"></div></div>
+    <div class="pw wide"><span class="lbl">Date and time in the From place</span><div class="row"><input id="when" type="datetime-local"><button class="chip" id="nowBtn">USE NOW</button></div></div>
+  </div>
+  <div class="result" id="result"></div>
+  <h2>Shared working hours</h2>
+  <p class="overlap" id="overlap"></p>
+  <div class="grid" id="grid"></div>
+  <div class="legend">TOP: HOUR IN FROM PLACE · BOTTOM: HOUR IN TO PLACE · GREEN = BOTH 09:00–18:00</div>
+  <a class="crosslink" href="../timer/">Need a countdown too? Open the timer →</a>
+  <section class="tips">
+    <h2>How to use it</h2>
+    <p>Search a city or country. A code on its own, like IST, CST, MST, or EST, shows only the places that use that code in the usual sense: IST is India, and CST is US, Canada, and Mexico Central. For other places with the same code, add a word: "CST China" shows Shanghai and Beijing, and "IST Israel" shows Jerusalem.</p>
+    <p>Each city line shows its time zone, the current UTC offset, and the standard code. Codes name the standard time, so Boston shows UTC−04:00 in summer while its code stays EST. Fixed codes like IST (UTC+05:30) never change for daylight saving.</p>
+  </section>
+</main>
+<footer>FREE · NO ACCOUNT · RUNS IN YOUR BROWSER</footer>
+<script>
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,'0');
+const label=z=>z.replace(/_/g,' ').split('/').slice(-1)[0];
+const fmts={};
+const fmtOff=m=>{const s=m<0?'−':'+',a=Math.abs(m);return `UTC${s}${pad(Math.floor(a/60))}:${pad(a%60)}`};
+const wordsOf=s=>s.toLowerCase().split(/[\s,\/_\-().']+/).filter(Boolean);
+
+function wallParts(ts,p){
+  if(p.off!=null){
+    const d=new Date(ts+p.off*60000);
+    return{y:d.getUTCFullYear(),m:d.getUTCMonth()+1,d:d.getUTCDate(),h:d.getUTCHours(),mi:d.getUTCMinutes()};
+  }
+  if(!fmts[p.z])fmts[p.z]=new Intl.DateTimeFormat('en-US',{timeZone:p.z,hourCycle:'h23',year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric'});
+  const q={};fmts[p.z].formatToParts(new Date(ts)).forEach(x=>{q[x.type]=x.value});
+  return{y:+q.year,m:+q.month,d:+q.day,h:+q.hour,mi:+q.minute};
+}
+function fromWall(y,mo,d,h,mi,p){
+  const want=Date.UTC(y,mo-1,d,h,mi);
+  if(p.off!=null)return want-p.off*60000;
+  let ts=want;
+  for(let i=0;i<2;i++){const w=wallParts(ts,p);ts+=want-Date.UTC(w.y,w.m-1,w.d,w.h,w.mi)}
+  return ts;
+}
+function offNow(p){
+  if(p.off!=null)return fmtOff(p.off);
+  const now=Date.now(),w=wallParts(now,p);
+  return fmtOff(Math.round((Date.UTC(w.y,w.m-1,w.d,w.h,w.mi)-Math.floor(now/60000)*60000)/60000));
+}
+
+// Fixed offsets. Searching a code shows these with it.
+const DIRECT=[
+  ['IST',330,'India'],['CST',-360,'US Central, standard time'],['CST',480,'China','china'],
+  ['EST',-300,'US Eastern, standard time'],['MST',-420,'US Mountain, standard time'],['PST',-480,'US Pacific, standard time'],
+  ['AKST',-540,'Alaska'],['HST',-600,'Hawaii'],['UTC',0,'Coordinated Universal Time'],['GMT',0,'UK winter, West Africa'],
+  ['WET',0,'Western Europe, standard time'],['CET',60,'Central Europe, standard time'],['EET',120,'Eastern Europe, standard time'],
+  ['MSK',180,'Moscow'],['GST',240,'Gulf, UAE'],['PKT',300,'Pakistan'],['SGT',480,'Singapore'],['JST',540,'Japan'],
+  ['KST',540,'Korea'],['AEST',600,'Eastern Australia, standard time'],['NZST',720,'New Zealand, standard time']
+].map(([code,off,country,q])=>({n:`${code} (${fmtOff(off)})`,short:code,city:`${code} (${fmtOff(off)})`,code,off,country,q:q||'',text:`${code} ${country}`}));
+
+// City|Country|Time zone|Standard code|Optional word that must be typed for an ambiguous code
+const CITY_DATA=`
+New York|United States|America/New_York|EST
+Boston|United States|America/New_York|EST
+Philadelphia|United States|America/New_York|EST
+Washington|United States|America/New_York|EST
+Baltimore|United States|America/New_York|EST
+Pittsburgh|United States|America/New_York|EST
+Newark|United States|America/New_York|EST
+Hartford|United States|America/New_York|EST
+Providence|United States|America/New_York|EST
+Albany|United States|America/New_York|EST
+Buffalo|United States|America/New_York|EST
+Atlanta|United States|America/New_York|EST
+Miami|United States|America/New_York|EST
+Orlando|United States|America/New_York|EST
+Tampa|United States|America/New_York|EST
+Jacksonville|United States|America/New_York|EST
+Charlotte|United States|America/New_York|EST
+Raleigh|United States|America/New_York|EST
+Richmond|United States|America/New_York|EST
+Savannah|United States|America/New_York|EST
+Charleston|United States|America/New_York|EST
+Detroit|United States|America/Detroit|EST
+Cleveland|United States|America/New_York|EST
+Columbus|United States|America/New_York|EST
+Cincinnati|United States|America/New_York|EST
+Indianapolis|United States|America/Indiana/Indianapolis|EST
+Louisville|United States|America/Kentucky/Louisville|EST
+Toronto|Canada|America/Toronto|EST
+Ottawa|Canada|America/Toronto|EST
+Montreal|Canada|America/Montreal|EST
+Quebec City|Canada|America/Toronto|EST
+Halifax|Canada|America/Halifax|AST
+St. John's|Canada|America/St_Johns|NST
+Kingston|Jamaica|America/Jamaica|EST
+Nassau|Bahamas|America/Nassau|EST
+Panama City|Panama|America/Panama|EST
+Cancun|Mexico|America/Cancun|EST
+Chicago|United States|America/Chicago|CST
+Dallas|United States|America/Chicago|CST
+Houston|United States|America/Chicago|CST
+Austin|United States|America/Chicago|CST
+San Antonio|United States|America/Chicago|CST
+Minneapolis|United States|America/Chicago|CST
+St. Louis|United States|America/Chicago|CST
+Kansas City|United States|America/Chicago|CST
+New Orleans|United States|America/Chicago|CST
+Nashville|United States|America/Chicago|CST
+Memphis|United States|America/Chicago|CST
+Birmingham|United States|America/Chicago|CST
+Oklahoma City|United States|America/Chicago|CST
+Tulsa|United States|America/Chicago|CST
+Milwaukee|United States|America/Chicago|CST
+Omaha|United States|America/Chicago|CST
+Des Moines|United States|America/Chicago|CST
+Little Rock|United States|America/Chicago|CST
+Jackson|United States|America/Chicago|CST
+Baton Rouge|United States|America/Chicago|CST
+Madison|United States|America/Chicago|CST
+Fargo|United States|America/Chicago|CST
+Sioux Falls|United States|America/Chicago|CST
+Winnipeg|Canada|America/Winnipeg|CST
+Regina|Canada|America/Regina|CST
+Saskatoon|Canada|America/Regina|CST
+Mexico City|Mexico|America/Mexico_City|CST
+Guadalajara|Mexico|America/Mexico_City|CST
+Monterrey|Mexico|America/Monterrey|CST
+Chihuahua|Mexico|America/Chihuahua|CST
+Guatemala City|Guatemala|America/Guatemala|CST
+San Salvador|El Salvador|America/El_Salvador|CST
+Tegucigalpa|Honduras|America/Tegucigalpa|CST
+Managua|Nicaragua|America/Managua|CST
+San Jose|Costa Rica|America/Costa_Rica|CST
+Havana|Cuba|America/Havana|CST
+Shanghai|China|Asia/Shanghai|CST|china
+Beijing|China|Asia/Shanghai|CST|china
+Macau|China|Asia/Macau|CST|china
+Taipei|Taiwan|Asia/Taipei|CST|taiwan
+Denver|United States|America/Denver|MST
+Salt Lake City|United States|America/Denver|MST
+Albuquerque|United States|America/Denver|MST
+Boise|United States|America/Boise|MST
+Cheyenne|United States|America/Denver|MST
+Colorado Springs|United States|America/Denver|MST
+Billings|United States|America/Denver|MST
+Santa Fe|United States|America/Denver|MST
+Phoenix|United States|America/Phoenix|MST
+Calgary|Canada|America/Edmonton|MST
+Edmonton|Canada|America/Edmonton|MST
+Hermosillo|Mexico|America/Hermosillo|MST
+Mazatlan|Mexico|America/Mazatlan|MST
+Los Angeles|United States|America/Los_Angeles|PST
+San Francisco|United States|America/Los_Angeles|PST
+San Diego|United States|America/Los_Angeles|PST
+San Jose|United States|America/Los_Angeles|PST
+Seattle|United States|America/Los_Angeles|PST
+Portland|United States|America/Los_Angeles|PST
+Sacramento|United States|America/Los_Angeles|PST
+Las Vegas|United States|America/Los_Angeles|PST
+Oakland|United States|America/Los_Angeles|PST
+Spokane|United States|America/Los_Angeles|PST
+Fresno|United States|America/Los_Angeles|PST
+Reno|United States|America/Los_Angeles|PST
+Vancouver|Canada|America/Vancouver|PST
+Victoria|Canada|America/Vancouver|PST
+Tijuana|Mexico|America/Tijuana|PST
+Anchorage|United States|America/Anchorage|AKST
+Honolulu|United States|Pacific/Honolulu|HST
+Bogota|Colombia|America/Bogota|COT
+Lima|Peru|America/Lima|PET
+Quito|Ecuador|America/Guayaquil|ECT
+Caracas|Venezuela|America/Caracas|VET
+La Paz|Bolivia|America/La_Paz|BOT
+Santiago|Chile|America/Santiago|CLT
+Buenos Aires|Argentina|America/Argentina/Buenos_Aires|ART
+Montevideo|Uruguay|America/Montevideo|UYT
+Asuncion|Paraguay|America/Asuncion|PYT
+Sao Paulo|Brazil|America/Sao_Paulo|BRT
+Rio de Janeiro|Brazil|America/Sao_Paulo|BRT
+Recife|Brazil|America/Recife|BRT
+Manaus|Brazil|America/Manaus|AMT
+Georgetown|Guyana|America/Guyana|GYT
+Paramaribo|Suriname|America/Paramaribo|SRT
+London|United Kingdom|Europe/London|GMT
+Dublin|Ireland|Europe/Dublin|GMT
+Reykjavik|Iceland|Atlantic/Reykjavik|GMT
+Lisbon|Portugal|Europe/Lisbon|WET
+Paris|France|Europe/Paris|CET
+Brussels|Belgium|Europe/Brussels|CET
+Amsterdam|Netherlands|Europe/Amsterdam|CET
+Berlin|Germany|Europe/Berlin|CET
+Munich|Germany|Europe/Berlin|CET
+Frankfurt|Germany|Europe/Berlin|CET
+Zurich|Switzerland|Europe/Zurich|CET
+Vienna|Austria|Europe/Vienna|CET
+Prague|Czechia|Europe/Prague|CET
+Budapest|Hungary|Europe/Budapest|CET
+Warsaw|Poland|Europe/Warsaw|CET
+Rome|Italy|Europe/Rome|CET
+Milan|Italy|Europe/Rome|CET
+Madrid|Spain|Europe/Madrid|CET
+Barcelona|Spain|Europe/Madrid|CET
+Luxembourg|Luxembourg|Europe/Luxembourg|CET
+Belgrade|Serbia|Europe/Belgrade|CET
+Zagreb|Croatia|Europe/Zagreb|CET
+Stockholm|Sweden|Europe/Stockholm|CET
+Oslo|Norway|Europe/Oslo|CET
+Copenhagen|Denmark|Europe/Copenhagen|CET
+Athens|Greece|Europe/Athens|EET
+Helsinki|Finland|Europe/Helsinki|EET
+Bucharest|Romania|Europe/Bucharest|EET
+Sofia|Bulgaria|Europe/Sofia|EET
+Riga|Latvia|Europe/Riga|EET
+Tallinn|Estonia|Europe/Tallinn|EET
+Vilnius|Lithuania|Europe/Vilnius|EET
+Kyiv|Ukraine|Europe/Kyiv|EET
+Chisinau|Moldova|Europe/Chisinau|EET
+Istanbul|Turkey|Europe/Istanbul|TRT
+Moscow|Russia|Europe/Moscow|MSK
+Minsk|Belarus|Europe/Minsk|MSK
+Dubai|United Arab Emirates|Asia/Dubai|GST
+Abu Dhabi|United Arab Emirates|Asia/Dubai|GST
+Muscat|Oman|Asia/Muscat|GST
+Riyadh|Saudi Arabia|Asia/Riyadh|AST
+Jeddah|Saudi Arabia|Asia/Riyadh|AST
+Doha|Qatar|Asia/Qatar|AST
+Kuwait City|Kuwait|Asia/Kuwait|AST
+Baghdad|Iraq|Asia/Baghdad|AST
+Tehran|Iran|Asia/Tehran|IRST
+Jerusalem|Israel|Asia/Jerusalem|IST|israel
+Tel Aviv|Israel|Asia/Jerusalem|IST|israel
+Beirut|Lebanon|Asia/Beirut|EET
+Amman|Jordan|Asia/Amman|EET
+Damascus|Syria|Asia/Damascus|EET
+Baku|Azerbaijan|Asia/Baku|AZT
+Tbilisi|Georgia|Asia/Tbilisi|GET
+Yerevan|Armenia|Asia/Yerevan|AMT
+Kabul|Afghanistan|Asia/Kabul|AFT
+New Delhi|India|Asia/Kolkata|IST
+Mumbai|India|Asia/Kolkata|IST
+Kolkata|India|Asia/Kolkata|IST
+Bengaluru|India|Asia/Kolkata|IST
+Chennai|India|Asia/Kolkata|IST
+Hyderabad|India|Asia/Kolkata|IST
+Pune|India|Asia/Kolkata|IST
+Ahmedabad|India|Asia/Kolkata|IST
+Jaipur|India|Asia/Kolkata|IST
+Karachi|Pakistan|Asia/Karachi|PKT
+Lahore|Pakistan|Asia/Karachi|PKT
+Islamabad|Pakistan|Asia/Karachi|PKT
+Dhaka|Bangladesh|Asia/Dhaka|BDT
+Kathmandu|Nepal|Asia/Kathmandu|NPT
+Colombo|Sri Lanka|Asia/Colombo|SLST
+Thimphu|Bhutan|Asia/Thimphu|BTT
+Yangon|Myanmar|Asia/Yangon|MMT
+Tokyo|Japan|Asia/Tokyo|JST
+Osaka|Japan|Asia/Tokyo|JST
+Seoul|South Korea|Asia/Seoul|KST
+Pyongyang|North Korea|Asia/Pyongyang|KST
+Hong Kong|China|Asia/Hong_Kong|HKT
+Ulaanbaatar|Mongolia|Asia/Ulaanbaatar|ULAT
+Almaty|Kazakhstan|Asia/Almaty|ALMT
+Tashkent|Uzbekistan|Asia/Tashkent|UZT
+Vladivostok|Russia|Asia/Vladivostok|VLAT
+Novosibirsk|Russia|Asia/Novosibirsk|NOVT
+Yekaterinburg|Russia|Asia/Yekaterinburg|YEKT
+Singapore|Singapore|Asia/Singapore|SGT
+Kuala Lumpur|Malaysia|Asia/Kuala_Lumpur|MYT
+Bangkok|Thailand|Asia/Bangkok|ICT
+Hanoi|Vietnam|Asia/Ho_Chi_Minh|ICT
+Ho Chi Minh City|Vietnam|Asia/Ho_Chi_Minh|ICT
+Phnom Penh|Cambodia|Asia/Phnom_Penh|ICT
+Vientiane|Laos|Asia/Vientiane|ICT
+Jakarta|Indonesia|Asia/Jakarta|WIB
+Surabaya|Indonesia|Asia/Jakarta|WIB
+Manila|Philippines|Asia/Manila|PHT
+Cairo|Egypt|Africa/Cairo|EET
+Tripoli|Libya|Africa/Tripoli|EET
+Tunis|Tunisia|Africa/Tunis|CET
+Algiers|Algeria|Africa/Algiers|CET
+Casablanca|Morocco|Africa/Casablanca|WET
+Lagos|Nigeria|Africa/Lagos|WAT
+Abuja|Nigeria|Africa/Lagos|WAT
+Kinshasa|DR Congo|Africa/Kinshasa|WAT
+Luanda|Angola|Africa/Luanda|WAT
+Accra|Ghana|Africa/Accra|GMT
+Abidjan|Ivory Coast|Africa/Abidjan|GMT
+Dakar|Senegal|Africa/Dakar|GMT
+Nairobi|Kenya|Africa/Nairobi|EAT
+Addis Ababa|Ethiopia|Africa/Addis_Ababa|EAT
+Dar es Salaam|Tanzania|Africa/Dar_es_Salaam|EAT
+Kampala|Uganda|Africa/Kampala|EAT
+Mogadishu|Somalia|Africa/Mogadishu|EAT
+Kigali|Rwanda|Africa/Kigali|CAT
+Khartoum|Sudan|Africa/Khartoum|CAT
+Johannesburg|South Africa|Africa/Johannesburg|SAST
+Cape Town|South Africa|Africa/Johannesburg|SAST
+Durban|South Africa|Africa/Johannesburg|SAST
+Maputo|Mozambique|Africa/Maputo|CAT
+Harare|Zimbabwe|Africa/Harare|CAT
+Lusaka|Zambia|Africa/Lusaka|CAT
+Windhoek|Namibia|Africa/Windhoek|CAT
+Antananarivo|Madagascar|Indian/Antananarivo|EAT
+Port Louis|Mauritius|Indian/Mauritius|MUT
+Sydney|Australia|Australia/Sydney|AEST
+Melbourne|Australia|Australia/Melbourne|AEST
+Brisbane|Australia|Australia/Brisbane|AEST
+Canberra|Australia|Australia/Sydney|AEST
+Hobart|Australia|Australia/Hobart|AEST
+Adelaide|Australia|Australia/Adelaide|ACST
+Darwin|Australia|Australia/Darwin|ACST
+Perth|Australia|Australia/Perth|AWST
+Auckland|New Zealand|Pacific/Auckland|NZST
+Wellington|New Zealand|Pacific/Auckland|NZST
+Christchurch|New Zealand|Pacific/Auckland|NZST
+Suva|Fiji|Pacific/Fiji|FJT
+Port Moresby|Papua New Guinea|Pacific/Port_Moresby|PGT
+Guam|Guam|Pacific/Guam|ChST
+UTC|Worldwide|UTC|UTC
+`;
+const CURATED=CITY_DATA.trim().split('\n').map(line=>{
+  const [city,country,z,code,q]=line.split('|').map(s=>s.trim());
+  return{n:`${city}, ${country}`,short:city,city,country,z,code,q:q||'',text:`${city} ${country}`,zt:z.replace(/[_\/]/g,' ')};
+});
+
+let zones=(typeof Intl.supportedValuesOf==='function')?Intl.supportedValuesOf('timeZone'):[];
+if(!zones.length)zones=['UTC','Europe/London','Europe/Paris','America/New_York','America/Chicago','America/Los_Angeles','Asia/Dubai','Asia/Kolkata','Asia/Singapore','Asia/Tokyo','Australia/Sydney'];
+const mine=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';
+if(!zones.includes(mine))zones=[mine,...zones];
+
+// Every other IANA time zone name, so cities without a curated entry still appear by name.
+const curatedZones=new Set(CURATED.map(c=>c.z));
+const GENERIC=zones.filter(z=>!curatedZones.has(z)).map(z=>{
+  const region=z.split('/')[0].replace(/_/g,' ');
+  return{n:`${label(z)}, ${region}`,short:label(z),city:label(z),country:region,z,code:'',q:'',text:`${label(z)} ${region}`,zt:z.replace(/[_\/]/g,' ')};
+});
+
+const ALL=[...DIRECT,...CURATED,...GENERIC];
+ALL.forEach(c=>{c.words=wordsOf(c.text);c.zwords=wordsOf(c.zt||'')});
+const CODES=new Set(ALL.filter(c=>c.code).map(c=>c.code.toLowerCase()));
+
+// A single code (IST, CST, MST) returns only places that use that code without a qualifier.
+// Other words must match a city, country, or zone name, so "CST China" finds Shanghai.
+function search(q){
+  const tokens=q.toLowerCase().split(/[\s,]+/).filter(Boolean);
+  if(!tokens.length)return[];
+  const satisfies=(t,c,ws)=>(c.code&&t===c.code.toLowerCase()&&(!c.q||tokens.includes(c.q)))||ws.some(w=>w.startsWith(t));
+  if(tokens.length===1&&CODES.has(tokens[0])){
+    return ALL.filter(c=>c.code&&c.code.toLowerCase()===tokens[0]&&!c.q).slice(0,40);
+  }
+  // City and country names first; zone names only when nothing else matches.
+  let hits=ALL.filter(c=>tokens.every(t=>satisfies(t,c,c.words)));
+  if(!hits.length)hits=ALL.filter(c=>tokens.every(t=>satisfies(t,c,c.zwords)));
+  return hits.slice(0,40);
+}
+const lineOf=c=>c.off!=null
+  ?`${c.code} (${fmtOff(c.off)}) — ${c.country}, fixed offset`
+  :`${c.city}, ${c.country} — ${c.z} (${offNow(c)})${c.code?' · '+c.code:''}`;
+
+const placeOf=z=>CURATED.find(c=>c.z===z)||GENERIC.find(c=>c.z===z)||{n:label(z),short:label(z),z,code:'',q:'',words:[],zwords:[]};
+const zone={from:placeOf(mine),to:placeOf(mine==='UTC'?'Europe/London':'UTC')};
+const when=$('#when');
+
+function convert(){
+  const from=zone.from,to=zone.to;
+  if(!when.value)return;
+  const [dp,tp]=when.value.split('T');
+  const [y,mo,d]=dp.split('-').map(Number);
+  const [h,mi]=tp.split(':').map(Number);
+  const w=wallParts(fromWall(y,mo,d,h,mi,from),to);
+  const sameDay=w.y===y&&w.m===mo&&w.d===d;
+  $('#result').innerHTML=`<div class="big">${pad(h)}:${pad(mi)}<small>${from.n}</small></div><div class="arrow">=</div><div class="big">${pad(w.h)}:${pad(w.mi)}<small>${to.n}${sameDay?'':' · other day'}</small></div>`;
+  const hours=[];
+  for(let x=0;x<24;x++){
+    const wt=wallParts(fromWall(y,mo,d,x,0,from),to).h;
+    hours.push({x,wt,ok:x>=9&&x<18&&wt>=9&&wt<18});
+  }
+  const ok=hours.filter(o=>o.ok);
+  $('#overlap').textContent=ok.length
+    ?`On this day: ${pad(ok[0].x)}:00 to ${pad(ok[ok.length-1].x+1)}:00 in ${from.n} is ${pad(ok[0].wt)}:00 to ${pad(ok[ok.length-1].wt+1)}:00 in ${to.n}.`
+    :'No shared 09:00 to 18:00 hours on this day.';
+  const grid=$('#grid');grid.innerHTML='';
+  hours.forEach(o=>{
+    const c=document.createElement('div');
+    c.className='cell'+(o.ok?' ok':'');
+    c.innerHTML=`<b>${pad(o.x)}</b><small>${pad(o.wt)}</small>`;
+    grid.appendChild(c);
+  });
+}
+function setZone(side,p){
+  zone[side]=p;
+  $('#'+side+'Q').value=p.n;
+  convert();tickLive();
+}
+function picker(side){
+  const input=$('#'+side+'Q'),hits=$('#'+side+'Hits');
+  const pick=p=>{hits.style.display='none';input.blur();setZone(side,p)};
+  const show=q=>{
+    hits.innerHTML='';
+    if(!q.trim()){hits.style.display='none';return}
+    const m=search(q);
+    if(!m.length){
+      hits.innerHTML='<div class="none">No match. Try a city or country, or a code such as IST, CST, MST, EST, or GMT.</div>';
+    }else m.forEach(p=>{
+      const b=document.createElement('button');
+      b.type='button';b.className='hit';b.p=p;
+      b.textContent=lineOf(p);
+      b.onmousedown=e=>{e.preventDefault();pick(p)};
+      hits.appendChild(b);
+    });
+    hits.style.display='block';
+  };
+  input.value=zone[side].n;
+  input.onfocus=()=>input.select();
+  input.oninput=()=>show(input.value);
+  input.onkeydown=e=>{
+    if(e.key==='Enter'){const f=hits.querySelector('.hit');if(f){e.preventDefault();pick(f.p)}}
+    if(e.key==='Escape'){hits.style.display='none';input.blur()}
+  };
+  input.onblur=()=>{hits.style.display='none';input.value=zone[side].n};
+}
+function tickLive(){
+  const now=Date.now(),sec=new Date(now).getUTCSeconds();
+  [['from','liveFrom','liveFromDate'],['to','liveTo','liveToDate']].forEach(([side,t,dEl])=>{
+    const p=zone[side],w=wallParts(now,p);
+    $('#'+t).textContent=`${pad(w.h)}:${pad(w.mi)}:${pad(sec)}`;
+    const day=new Date(Date.UTC(w.y,w.m-1,w.d)).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
+    $('#'+dEl).textContent=`${p.n} · ${p.z||'fixed offset'} · ${offNow(p)} · ${day}`;
+  });
+}
+function setNow(){
+  const w=wallParts(Date.now(),zone.from);
+  when.value=`${w.y}-${pad(w.m)}-${pad(w.d)}T${pad(w.h)}:${pad(w.mi)}`;
+  convert();
+}
+
+const pairList=[
+  [DIRECT.find(d=>d.code==='IST'),DIRECT.find(d=>d.code==='CST'&&!d.q)],
+  [placeOf('Asia/Kolkata'),placeOf('America/Chicago')],
+  [placeOf('Europe/London'),placeOf('America/New_York')]
+];
+pairList.forEach(([a,b])=>{
+  const c=document.createElement('button');
+  c.type='button';c.className='chip';
+  c.textContent=`${a.short} → ${b.short}`;
+  c.onclick=()=>{setZone('from',a);setZone('to',b)};
+  $('#pairs').appendChild(c);
+});
+picker('from');
+picker('to');
+$('#swap').onclick=()=>{const t=zone.from;setZone('from',zone.to);setZone('to',t)};
+$('#nowBtn').onclick=setNow;
+when.addEventListener('change',convert);
+setNow();
+tickLive();
+setInterval(tickLive,250);
+</script>
+</body>
+</html>
