@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Free online timer with an hourglass view. Set minutes, watch the sand drain, and get an alarm when time is up. Runs in your browser, no account needed.">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../favicon-180.png">
+<title>Online timer with hourglass · IIXI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap');
+:root{--bg:#070707;--fg:#f4f2ec;--acid:#b4ff2c;--line:#262626}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--fg);font-family:"Space Grotesk",sans-serif;padding:24px 20px 40px;color-scheme:dark}
+button,input{font:inherit}
+header{display:flex;justify-content:space-between;align-items:center;max-width:960px;margin:0 auto 40px;flex-wrap:wrap;gap:12px}
+.logo{font-weight:700;font-size:22px;letter-spacing:-1px;color:#fff;text-decoration:none}
+.logo span{color:var(--acid)}
+nav a{color:#777;font:10px "DM Mono",monospace;letter-spacing:1px;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 11px;margin-left:6px}
+nav a:hover{color:#fff;border-color:#555}
+main{max-width:720px;margin:0 auto;text-align:center}
+h1{font-size:clamp(34px,6vw,56px);letter-spacing:-.04em;margin:0 0 10px}
+.lead{color:#999;font-size:16px;margin:0 0 30px;line-height:1.5}
+.presets{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.chip{border:1px solid var(--line);background:#0d0d0d;color:#ddd;border-radius:999px;padding:9px 16px;font:500 12px "DM Mono",monospace;letter-spacing:1px;cursor:pointer}
+.chip:hover,.chip.on{border-color:var(--acid);color:var(--acid)}
+.custom{display:flex;gap:8px;justify-content:center;align-items:center;margin-bottom:34px;color:#777;font:12px "DM Mono",monospace;flex-wrap:wrap}
+.custom input{width:84px;background:#0d0d0d;border:1px solid var(--line);color:#fff;border-radius:8px;padding:8px;text-align:center}
+.face{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap}
+.hg{width:120px;height:180px}
+.clock{font:500 clamp(56px,13vw,116px)/1 "DM Mono",monospace;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.actions{display:flex;gap:10px;justify-content:center;margin:30px 0 18px}
+.primary,.ghost{border-radius:999px;padding:14px 26px;font:500 12px "DM Mono",monospace;letter-spacing:2px;cursor:pointer}
+.primary{border:1px solid var(--acid);background:var(--acid);color:#050505}
+.ghost{border:1px solid #393939;background:#111;color:#fff}
+.msg{min-height:26px;color:var(--acid);font:13px "DM Mono",monospace;letter-spacing:1px}
+.crosslink{display:inline-block;margin-top:22px;color:var(--acid);font:12px "DM Mono",monospace;letter-spacing:1px;text-decoration:none;border-bottom:1px solid var(--acid);padding-bottom:3px}
+.tips{margin-top:50px;text-align:left;color:#888;font-size:15px;line-height:1.6;border-top:1px solid var(--line);padding-top:24px}
+.tips h2{color:#fff;font-size:18px;margin:0 0 8px}
+.tips p{margin:0}
+footer{max-width:960px;margin:40px auto 0;color:#555;font:10px "DM Mono",monospace;letter-spacing:1px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="../">IIXI<span>.</span></a>
+  <nav><a href="../time-zone/">TIME ZONES</a><a href="https://YOURNAME.substack.com" target="_blank" rel="noopener">NEWSLETTER ↗</a></nav>
+</header>
+<main>
+  <h1>Online timer</h1>
+  <p class="lead">Set a time, watch the sand drain, and get an alarm when it's up. Runs in your browser, no account needed.</p>
+  <div class="presets" id="presets"></div>
+  <div class="custom"><span>or</span><input id="mins" type="number" min="1" max="600" value="25"><span>minutes</span><button class="chip" id="setCustom">SET</button></div>
+  <div class="face">
+    <svg class="hg" viewBox="0 0 200 300" aria-hidden="true">
+      <defs>
+        <clipPath id="gc"><path d="M30 20H170L100 150L170 280H30L100 150Z"/></clipPath>
+        <linearGradient id="sh" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#fff" stop-opacity=".3"/></linearGradient>
+      </defs>
+      <g clip-path="url(#gc)"><rect id="sandT" x="0" y="20" width="200" height="130" fill="#d8bd84"/><rect id="sandB" x="0" y="280" width="200" height="0" fill="#d8bd84"/></g>
+      <path d="M30 20H170L100 150L170 280H30L100 150Z" fill="url(#sh)" stroke="#9fb3bf" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="18" y="8" width="164" height="12" rx="4" fill="#6b5a46"/>
+      <rect x="18" y="280" width="164" height="12" rx="4" fill="#6b5a46"/>
+    </svg>
+    <div class="clock" id="clock">25:00</div>
+  </div>
+  <div class="actions"><button class="primary" id="go">START</button><button class="ghost" id="reset">RESET</button></div>
+  <div class="msg" id="msg"></div>
+  <a class="crosslink" href="../time-zone/">Meeting in another city? Check the time zones →</a>
+  <section class="tips">
+    <h2>How to use it</h2>
+    <p>Pick a preset or type your own minutes, then press start. The hourglass drains as time passes, and the browser tab shows the countdown, so you can keep an eye on it from another tab. When time is up you'll hear three beeps and see a reminder to take a short break.</p>
+  </section>
+</main>
+<footer>FREE · NO ACCOUNT · RUNS IN YOUR BROWSER</footer>
+<script>
+const $=s=>document.querySelector(s);
+const PRESETS=[5,10,25,50];
+const pad=n=>String(n).padStart(2,'0');
+const clockEl=$('#clock'),msgEl=$('#msg'),goBtn=$('#go'),sandT=$('#sandT'),sandB=$('#sandB');
+let totalS=25*60,secs=totalS,endAt=0,timerId=0,running=false,ac=null;
+
+function fmt(s){const h=Math.floor(s/3600),m=Math.floor(s%3600/60),r=s%60;return h?`${h}:${pad(m)}:${pad(r)}`:`${pad(m)}:${pad(r)}`}
+function draw(){
+  clockEl.textContent=fmt(secs);
+  const p=1-secs/totalS;
+  sandT.setAttribute('y',(20+130*p).toFixed(1));sandT.setAttribute('height',(130-130*p).toFixed(1));
+  sandB.setAttribute('y',(280-130*p).toFixed(1));sandB.setAttribute('height',(130*p).toFixed(1));
+  document.title=(running||secs<totalS)?`${fmt(secs)} · Online timer`:'Online timer with hourglass · IIXI';
+}
+function tick(){
+  secs=Math.max(0,Math.ceil((endAt-Date.now())/1000));
+  draw();
+  if(secs<=0)finish();
+}
+function finish(){
+  clearInterval(timerId);running=false;goBtn.textContent='START';
+  msgEl.textContent="Time's up. Take a short break, then start again when you're ready.";
+  beep();
+  if(navigator.vibrate)navigator.vibrate([200,100,200]);
+}
+function audio(){try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume()}catch(e){}}
+function beep(){
+  if(!ac)return;
+  [0,.45,.9].forEach(t=>{
+    const o=ac.createOscillator(),g=ac.createGain(),s=ac.currentTime+t;
+    o.frequency.value=880;
+    g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(.3,s+.02);g.gain.exponentialRampToValueAtTime(.0001,s+.3);
+    o.connect(g);g.connect(ac.destination);o.start(s);o.stop(s+.32);
+  });
+}
+function setMinutes(m){
+  clearInterval(timerId);running=false;
+  totalS=secs=Math.max(1,Math.min(600,m))*60;
+  goBtn.textContent='START';msgEl.textContent='';
+  document.querySelectorAll('.chip[data-m]').forEach(c=>c.classList.toggle('on',+c.dataset.m===m));
+  draw();
+}
+
+PRESETS.forEach(m=>{
+  const b=document.createElement('button');
+  b.className='chip';b.dataset.m=m;b.textContent=`${m} MIN`;
+  b.onclick=()=>{$('#mins').value=m;setMinutes(m)};
+  $('#presets').appendChild(b);
+});
+$('#setCustom').onclick=()=>setMinutes(+$('#mins').value||25);
+goBtn.onclick=()=>{
+  audio();
+  if(running){clearInterval(timerId);running=false;goBtn.textContent='RESUME';msgEl.textContent='Paused.';return}
+  if(secs<=0)secs=totalS;
+  endAt=Date.now()+secs*1000;running=true;goBtn.textContent='PAUSE';msgEl.textContent='';
+  clearInterval(timerId);timerId=setInterval(tick,250);tick();
+};
+$('#reset').onclick=()=>setMinutes(totalS/60);
+setMinutes(25);
+</script>
+</body>
+</html>
