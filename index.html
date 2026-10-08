@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070707">
+<meta name="description" content="IIXI — a shelf of pointless little toys. Waste time responsibly.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+<title>IIXI — The Toy Box</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap');
+:root{--bg:#070707;--fg:#f4f2ec;--acid:#b4ff2c}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0}
+body{overflow:hidden;background:var(--bg);color:var(--fg);font-family:"Space Grotesk",sans-serif}
+button,input{font:inherit;cursor:pointer}
+p{font-size:17px;color:#999;margin:0 auto 24px;max-width:640px;line-height:1.5}
+.grain{position:fixed;inset:-50%;pointer-events:none;z-index:50;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:noise .15s steps(2) infinite}
+@keyframes noise{0%{transform:translate(0)}50%{transform:translate(-1%,2%)}100%{transform:translate(-2%,-2%)}}
+.glow{position:fixed;width:520px;height:520px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(180,255,44,.11),transparent 65%);z-index:0}
+header{position:fixed;left:32px;right:32px;top:27px;display:flex;justify-content:space-between;align-items:center;z-index:20}
+.hl,.hr{display:flex;align-items:center;gap:10px}
+.logo{background:none;border:0;color:#fff;font-size:24px;font-weight:700;letter-spacing:-2px;padding:0}
+.logo span{color:var(--acid)}
+.tiny,.back{border:1px solid #252525;background:#0c0c0c;color:#777;border-radius:999px;padding:8px 11px;font:10px "DM Mono",monospace;letter-spacing:1px;text-decoration:none;transition:.2s}
+.tiny:hover,.back:hover{color:#fff;border-color:#555}
+.back{display:none}.back.show{display:inline-block}
+.scene{position:absolute;left:0;right:0;top:100px;bottom:0;overflow-y:auto;padding:24px 20px 60px;text-align:center}
+#toy{display:none}
+.kicker{font:500 11px "DM Mono",monospace;letter-spacing:4px;color:#777;margin-bottom:18px}
+h1{font-size:clamp(48px,8vw,110px);line-height:.9;letter-spacing:-.06em;margin:0 0 18px;font-weight:700}
+h1 strong{color:var(--acid)}
+.daily{display:block;margin:0 auto 26px;border:1px solid var(--acid);background:transparent;color:var(--acid);padding:12px 22px;border-radius:999px;font:500 11px "DM Mono",monospace;letter-spacing:2px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;width:min(900px,92vw);margin:0 auto}
+.tile{position:relative;text-align:left;border:1px solid #292929;background:#0d0d0d;color:#eee;padding:18px;min-height:112px;border-radius:8px;transition:.2s}
+.tile:hover{border-color:var(--acid);transform:translateY(-2px)}
+.tile strong{display:block;font:500 12px "DM Mono",monospace;letter-spacing:2px;margin-bottom:10px}
+.tile span{color:#777;font-size:13px;line-height:1.4}
+.tile b{position:absolute;right:12px;top:10px;color:var(--acid)}
+.count{margin-top:26px;font:10px "DM Mono",monospace;letter-spacing:2px;color:#555}
+.action{border:1px solid #393939;background:#111;color:#fff;border-radius:999px;padding:16px 23px 16px 27px;font:500 12px "DM Mono",monospace;letter-spacing:2px;transition:.2s}
+.action:hover:not(:disabled){border-color:var(--acid)}
+.action:disabled{opacity:.45;cursor:wait}
+.action i{font-style:normal;font-size:16px;margin-left:22px}
+#stage{display:flex;flex-direction:column;align-items:center;gap:18px;min-height:120px}
+.mono{font:500 11px "DM Mono",monospace;letter-spacing:2px;color:#777}
+.note{min-height:24px;font:12px "DM Mono",monospace;letter-spacing:1px;color:var(--acid);margin-top:18px}
+
+/* battery */
+.battery{display:flex;flex-direction:column;align-items:center;gap:10px}
+.battery svg{width:300px;height:auto}
+.pct{font-size:14px;color:var(--acid)}
+
+/* switch */
+.plate{position:relative;width:130px;height:200px;border-radius:14px;background:linear-gradient(#f4f1ea,#d9d4c7);box-shadow:inset 0 2px 3px #fff,0 6px 14px rgba(0,0,0,.45);cursor:pointer;margin:0 auto;user-select:none}
+.lever{position:absolute;left:50%;top:50%;width:34px;height:60px;margin:-30px 0 0 -17px;border-radius:8px;background:linear-gradient(90deg,#8a8f96,#eceef0,#8a8f96);box-shadow:0 3px 5px rgba(0,0,0,.35);transition:transform .15s}
+.plate.on .lever{transform:translateY(-44px)}
+.hand{position:absolute;right:-64px;top:70px;font-size:44px;opacity:0;transform:translateX(20px);transition:opacity .2s,transform .3s}
+.plate.hand-on .hand{opacity:1;transform:translateX(0)}
+
+/* counter */
+.tally{padding:18px 22px;border-radius:16px;background:linear-gradient(#2a2d31,#121417);box-shadow:0 10px 24px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
+.win{font:700 56px/1 "DM Mono",monospace;letter-spacing:6px;color:#e8f7d0;background:#050505;padding:10px 16px;border-radius:6px;box-shadow:inset 0 3px 8px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.1)}
+.knob{width:120px;height:120px;border-radius:50%;border:0;color:#222;font:500 12px "DM Mono",monospace;letter-spacing:2px;background:radial-gradient(circle at 35% 30%,#fff,#c9ccd1 45%,#7d828a 85%);box-shadow:0 8px 16px rgba(0,0,0,.45),inset 0 -4px 8px rgba(0,0,0,.25);transition:transform .08s}
+.knob:active{transform:translateY(3px) scale(.98)}
+
+/* bubble wrap */
+.sheet{display:grid;grid-template-columns:repeat(6,46px);gap:8px;justify-content:center;padding:18px;border-radius:12px;background:linear-gradient(135deg,#dbe9f3,#b5cadb);box-shadow:inset 0 0 22px rgba(255,255,255,.7),0 12px 30px rgba(0,0,0,.45)}
+.bubble{width:46px;height:46px;padding:0;border:0;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff 0 4%,rgba(255,255,255,.55) 9%,rgba(230,240,248,.35) 22%,rgba(170,196,216,.45) 60%,rgba(120,150,175,.6) 100%);box-shadow:inset -4px -5px 7px rgba(60,90,115,.35),inset 3px 3px 5px rgba(255,255,255,.7),0 2px 3px rgba(40,70,95,.35);transition:transform .15s}
+.bubble:hover{transform:scale(1.06)}
+.bubble.pop{animation:pop .22s ease-out}
+.bubble.popped{background:linear-gradient(135deg,#e7f0f7,#c7d8e5);box-shadow:inset 0 0 0 1px rgba(90,120,145,.35),inset 2px 2px 4px rgba(90,120,145,.25);transform:scale(.92)}
+.bubble.mystery{box-shadow:0 0 0 3px #f5c542,0 0 16px rgba(245,197,66,.85)}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.22)}100%{transform:scale(.92)}}
+
+/* sand timer */
+.hourglass{width:190px;height:285px;transition:transform .7s cubic-bezier(.4,.1,.2,1);filter:drop-shadow(0 10px 14px rgba(0,0,0,.5))}
+
+/* doodle pad */
+.doodle{background:#f5f0e1;border-radius:4px;box-shadow:0 10px 26px rgba(0,0,0,.45);touch-action:none;max-width:100%}
+
+/* index card */
+.task{font:500 24px/1.35 "Space Grotesk",sans-serif;color:#222;background:#f3ecd9;padding:28px 30px;border-radius:4px;box-shadow:0 10px 30px rgba(0,0,0,.4);transform:rotate(-.6deg);max-width:620px;margin:0 auto}
+
+.toast{position:fixed;left:50%;bottom:40px;transform:translate(-50%,15px);opacity:0;background:#f2f0ea;color:#080808;padding:10px 16px;border-radius:5px;font:10px "DM Mono",monospace;z-index:70;transition:.25s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:700px){header{left:20px;right:20px;top:20px}.scene{top:90px}.tiles{grid-template-columns:1fr 1fr}.tiny,.back{padding:7px 8px;font-size:8px}.sheet{grid-template-columns:repeat(5,40px)}.bubble{width:40px;height:40px}.win{font-size:42px}.hourglass{width:160px;height:240px}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="glow" id="glow"></div>
+<header>
+  <div class="hl"><button class="logo" id="logo" aria-label="Home">IIXI<span>.</span></button><button class="back" id="back">← BACK</button></div>
+  <div class="hr"><a class="tiny" href="https://YOURNAME.substack.com" target="_blank" rel="noopener">NEWSLETTER ↗</a><button class="tiny" id="shareBtn">SHARE ↗</button></div>
+</header>
+<main class="scene">
+  <section id="shelf">
+    <button class="daily" id="daily"></button>
+    <div class="tiles" id="tiles"></div>
+    <div class="count" id="count"></div>
+  </section>
+  <section id="toy">
+    <div class="kicker" id="kicker"></div>
+    <h1 id="title"></h1>
+    <p id="desc"></p>
+    <div id="stage"></div>
+    <div class="note" id="note"></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+const E={logo:$('#logo'),back:$('#back'),shelf:$('#shelf'),toy:$('#toy'),tiles:$('#tiles'),daily:$('#daily'),count:$('#count'),kicker:$('#kicker'),title:$('#title'),desc:$('#desc'),stage:$('#stage'),note:$('#note'),toast:$('#toast'),glow:$('#glow')};
+const store={get:(k,d)=>{try{return localStorage.getItem(k)??d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+
+const TASK_URL='https://bored-api.appbrewery.com/random';
+const FALLBACK_TASKS=['Go outside and look at the sky for one minute.','Learn five words in a language you do not speak.','Text someone you have not talked to in a while.','Drink a glass of water, then stretch for one minute.'];
+const DAILY_IDS=['battery','counter','bubbles'];
+const MYSTERY=['It was empty. The mystery is that it was empty.','A tiny sticker inside says: keep going.','Nothing, but it sparkled for a second.','A rare bubble. You are now a bubble expert.','A secret note: this bubble was also bored.'];
+const TOYS={
+  battery:{h:'BATTERY',d:'Hold to charge. Release for a verdict.',b:battery},
+  counter:{h:'COUNTER',d:'Tap. Nothing happens. Keep going.',b:counter},
+  switch:{h:'USELESS SWITCH',d:'Flip it on. It will not stay on.',b:useless},
+  bubbles:{h:'BUBBLE WRAP',d:'Pop all thirty. One in eight hides a mystery.',b:bubbles},
+  doodle:{h:'DOODLE PAD',d:'Draw. Your lines fade in four seconds.',b:doodle},
+  sand:{h:'SAND TIMER',d:'Waits a random time, then tells you how long.',b:sand},
+  tasks:{h:'TASK DRAWER',d:'A random thing to do, from the Bored API.',b:tasks}
+};
+
+const dayNum=Math.floor(Date.now()/864e5);
+const lastDay=Number(store.get('iixiLastDay',0));
+let streak=Number(store.get('iixiStreak',1));
+if(lastDay&&lastDay!==dayNum)streak=lastDay===dayNum-1?streak+1:1;
+store.set('iixiLastDay',dayNum);
+store.set('iixiStreak',streak);
+
+let dailyRun=false,stops=[],toastTimer;
+const dayKey=()=>new Date().toISOString().slice(0,10);
+const dailyToy=()=>DAILY_IDS[dayNum%DAILY_IDS.length];
+const loadDaily=()=>{try{return JSON.parse(store.get('iixiDaily','null'))}catch(e){return null}};
+const loadTried=()=>{try{return JSON.parse(store.get('iixiTried','[]'))}catch(e){return []}};
+const markTried=id=>{const t=loadTried();if(!t.includes(id)){t.push(id);store.set('iixiTried',JSON.stringify(t))}};
+const rnd=n=>Math.floor(Math.random()*n);
+const el=(tag,cls,html)=>{const x=document.createElement(tag);if(cls)x.className=cls;if(html!=null)x.innerHTML=html;return x};
+const add=(...xs)=>xs.forEach(x=>E.stage.appendChild(x));
+const onStop=f=>stops.push(f);
+const stopAll=()=>{stops.forEach(f=>f());stops=[]};
+const note=m=>{E.note.textContent=m};
+function toast(m){E.toast.textContent=m;E.toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>E.toast.classList.remove('show'),2200)}
+function button(label,h){const b=el('button','action',`<span>${label}</span><i>↗</i>`);b.type='button';b.onclick=h;return b}
+
+function home(){
+  stopAll();dailyRun=false;
+  E.toy.style.display='none';E.shelf.style.display='block';E.back.classList.remove('show');
+  renderShelf();
+}
+function openToy(id,daily=false){
+  stopAll();
+  dailyRun=daily;
+  const t=TOYS[id];
+  E.shelf.style.display='none';E.toy.style.display='block';E.back.classList.add('show');
+  E.kicker.textContent=daily?"TODAY'S TOY":'TOY';
+  E.title.innerHTML=t.h;E.desc.textContent=t.d;
+  E.stage.innerHTML='';note('');
+  markTried(id);
+  t.b(daily);
+}
+function done(label,value,joke){
+  if(dailyRun){
+    dailyRun=false;
+    store.set('iixiDaily',JSON.stringify({day:dayKey(),label,value,joke}));
+    showResult();
+    return;
+  }
+  note(`${value}. ${joke}`);
+}
+function showResult(){
+  stopAll();dailyRun=false;
+  const r=loadDaily();
+  E.shelf.style.display='none';E.toy.style.display='block';E.back.classList.add('show');
+  E.kicker.textContent="TODAY'S TOY";
+  E.title.innerHTML='Done for<br><strong>today.</strong>';
+  E.desc.textContent=r?`${r.label}: ${r.value}. ${r.joke}`:'';
+  E.stage.innerHTML='';
+  add(button('SHARE RESULT',shareDaily));
+  note('One try per day. Resets at midnight UTC.');
+}
+function openDaily(){
+  const r=loadDaily();
+  if(r&&r.day===dayKey()){showResult();return}
+  openToy(dailyToy(),true);
+}
+async function shareDaily(){
+  const r=loadDaily();if(!r)return;
+  const text=`IIXI ${r.day}\n${r.label}: ${r.value}\n${r.joke}\nYour turn.`;
+  try{
+    if(navigator.share)await navigator.share({title:'IIXI — Today',text,url:location.href});
+    else if(navigator.clipboard){await navigator.clipboard.writeText(`${text}\n${location.href}`);toast('Result copied.')}
+    else toast('Copy is not supported here.');
+  }catch(err){}
+}
+function renderShelf(){
+  const tried=loadTried();
+  E.tiles.innerHTML='';
+  Object.entries(TOYS).forEach(([id,t])=>{
+    const b=el('button','tile',`<strong>${t.h}</strong><span>${t.d}</span>${tried.includes(id)?'<b>✓</b>':''}`);
+    b.onclick=()=>openToy(id);
+    E.tiles.appendChild(b);
+  });
+  const r=loadDaily(),today=r&&r.day===dayKey();
+  E.daily.textContent=today?`Today: ${r.label} ${r.value}. Tap to share.`:`Today's toy: ${TOYS[dailyToy()].h}. One try.`;
+  E.count.textContent=`TOYS TRIED ${tried.length} / ${Object.keys(TOYS).length} · DAY ${streak} STREAK`;
+}
+
+function battery(daily){
+  const wrap=el('div','battery','<svg viewBox="0 0 220 110"><defs><linearGradient id="bgrad" x1="0" x2="1"><stop offset="0" stop-color="#4f7a16"/><stop offset="1" stop-color="#b4ff2c"/></linearGradient></defs><rect x="8" y="8" width="184" height="94" rx="14" fill="#15171a" stroke="#8c949c" stroke-width="4"/><rect x="192" y="38" width="16" height="34" rx="4" fill="#8c949c"/><rect id="lvl" x="18" y="18" width="0" height="74" rx="8" fill="url(#bgrad)"/></svg><div class="pct">0%</div>');
+  const lvl=wrap.querySelector('#lvl'),pct=wrap.querySelector('.pct');
+  const btn=el('button','action','<span>HOLD</span><i>●</i>');btn.type='button';
+  let t0=0,last=0,raf=0;
+  const level=()=>t0?Math.min(100,Math.round((performance.now()-t0)/30)):last;
+  const tick=()=>{const v=level();lvl.setAttribute('width',(v*1.64).toFixed(1));pct.textContent=v+'%';raf=requestAnimationFrame(tick)};
+  tick();onStop(()=>cancelAnimationFrame(raf));
+  btn.onpointerdown=e=>{if(t0)return;t0=performance.now();btn.setPointerCapture(e.pointerId)};
+  btn.onpointerup=()=>{
+    if(!t0)return;
+    last=level();t0=0;
+    done('BATTERY',`${last}% charge`,last<20?'Certified potato.':last<60?'Mildly electric.':last<100?'Suspiciously powerful.':'Full. Nobody asked.');
+  };
+  add(wrap,btn);
+}
+function counter(daily){
+  let n=0,t0=0,iv=0;
+  const win=el('div','win','0000'),sub=el('div','mono','TAP');
+  const tally=el('div','tally');tally.appendChild(win);
+  const btn=el('button','knob','TAP');btn.type='button';
+  onStop(()=>clearInterval(iv));
+  btn.onclick=()=>{
+    if(daily){
+      if(!t0){
+        t0=Date.now();
+        iv=setInterval(()=>{
+          const s=(Date.now()-t0)/1000;
+          sub.textContent=`${Math.max(0,10-s).toFixed(1)} s left`;
+          if(s>=10){clearInterval(iv);done('COUNTER',`${n} taps in 10 s`,'Pointless and precise.')}
+        },100);
+      }
+      if(Date.now()-t0>=10000)return;
+    }
+    n++;win.textContent=String(n).padStart(4,'0');
+    if(!daily){
+      if(n===10)note('Ten. Nothing happened.');
+      else if(n===50)note('Fifty. Still nothing.');
+      else if(n===100)note('A hundred. Impressive, for nothing.');
+    }
+  };
+  add(tally,sub,btn);
+}
+function useless(){
+  let on=false,t=0;
+  onStop(()=>clearTimeout(t));
+  const plate=el('div','plate','<div class="lever"></div><div class="hand">✋</div>');
+  plate.onclick=()=>{
+    if(on)return;
+    on=true;plate.classList.add('on');
+    note('It is on. For now.');
+    t=setTimeout(()=>{
+      on=false;plate.classList.remove('on');plate.classList.add('hand-on');
+      note('A small hand turned it off. Nobody saw it.');
+      setTimeout(()=>plate.classList.remove('hand-on'),900);
+    },1500);
+  };
+  add(plate);
+}
+function bubbles(daily){
+  const sheet=el('div','sheet');let popped=0,t0=0;
+  for(let i=0;i<30;i++){
+    const b=el('button','bubble');b.type='button';
+    const mystery=rnd(8)===0;
+    b.onclick=()=>{
+      if(b.classList.contains('popped'))return;
+      if(!t0)t0=Date.now();
+      b.classList.add('popped','pop');popped++;
+      if(mystery){b.classList.add('mystery');note(`Mystery bubble. ${MYSTERY[rnd(MYSTERY.length)]}`)}
+      if(popped===30){
+        const s=((Date.now()-t0)/1000).toFixed(1);
+        if(daily)done('BUBBLES',`30 popped in ${s} s`,'Efficient. Pointless.');
+        else{note(`All popped in ${s} s. Nothing gained.`);add(button('AGAIN',()=>openToy('bubbles')))}
+      }
+    };
+    sheet.appendChild(b);
+  }
+  add(sheet);
+}
+function doodle(){
+  const c=el('canvas','doodle');c.width=Math.min(640,innerWidth-40);c.height=300;c.style.width=c.width+'px';
+  const ctx=c.getContext('2d');let strokes=[],cur=null,raf=0;
+  const pt=e=>{const r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top,t:performance.now()}};
+  c.onpointerdown=e=>{cur=[pt(e)];strokes.push(cur);c.setPointerCapture(e.pointerId)};
+  c.onpointermove=e=>{if(cur)cur.push(pt(e))};
+  c.onpointerup=()=>{cur=null};
+  const frame=()=>{
+    const now=performance.now();
+    ctx.clearRect(0,0,c.width,c.height);
+    strokes=strokes.filter(s=>now-s[s.length-1].t<4000);
+    strokes.forEach(s=>{
+      ctx.beginPath();
+      s.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+      ctx.strokeStyle=`rgba(40,40,40,${Math.max(0,1-(now-s[s.length-1].t)/3000)})`;
+      ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+    });
+    raf=requestAnimationFrame(frame);
+  };
+  frame();onStop(()=>cancelAnimationFrame(raf));
+  add(c);
+}
+function sand(){
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 200 300');svg.setAttribute('class','hourglass');
+  svg.innerHTML='<defs><clipPath id="glassclip"><path d="M30 20H170L100 150L170 280H30L100 150Z"/></clipPath><linearGradient id="shine" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#fff" stop-opacity=".3"/></linearGradient></defs><g clip-path="url(#glassclip)"><rect id="sandTop" x="0" y="20" width="200" height="130" fill="#d8bd84"/><rect id="sandBot" x="0" y="280" width="200" height="0" fill="#d8bd84"/></g><line id="stream" x1="100" y1="150" x2="100" y2="150" stroke="#d8bd84" stroke-width="3" opacity="0"/><path d="M30 20H170L100 150L170 280H30L100 150Z" fill="url(#shine)" stroke="#9fb3bf" stroke-width="3" stroke-linejoin="round"/><rect x="18" y="8" width="164" height="12" rx="4" fill="#6b5a46"/><rect x="18" y="280" width="164" height="12" rx="4" fill="#6b5a46"/>';
+  const topR=svg.querySelector('#sandTop'),botR=svg.querySelector('#sandBot'),stream=svg.querySelector('#stream');
+  let rot=0,iv=0;
+  const set=(p,running)=>{
+    topR.setAttribute('y',(20+130*p).toFixed(1));topR.setAttribute('height',(130-130*p).toFixed(1));
+    botR.setAttribute('y',(280-130*p).toFixed(1));botR.setAttribute('height',(130*p).toFixed(1));
+    stream.setAttribute('y2',(280-130*p).toFixed(1));stream.setAttribute('opacity',running&&p<1?1:0);
+  };
+  set(0,false);
+  const sub=el('div','mono','PRESS START'),btn=button('START',()=>{});
+  onStop(()=>clearInterval(iv));
+  btn.onclick=()=>{
+    if(btn.dataset.s==='flip'){
+      rot+=180;svg.style.transform=`rotate(${rot}deg)`;
+      setTimeout(()=>set(0,false),720);
+      btn.dataset.s='';btn.querySelector('span').textContent='START';
+      sub.textContent='PRESS START';note('');
+      return;
+    }
+    if(iv)return;
+    btn.disabled=true;
+    const len=4+rnd(11),t0=Date.now();
+    iv=setInterval(()=>{
+      const s=(Date.now()-t0)/1000;
+      set(Math.min(1,s/len),s<len);
+      sub.textContent=`${Math.min(s,len).toFixed(1)} s of ${len} s`;
+      if(s>=len){
+        clearInterval(iv);iv=0;
+        btn.disabled=false;btn.dataset.s='flip';btn.querySelector('span').textContent='FLIP';
+        note(`You waited ${len} seconds for nothing.`);
+      }
+    },50);
+  };
+  add(svg,sub,btn);
+}
+async function tasks(){
+  const p=el('p','task','Finding something to do…');
+  const get=async()=>{
+    p.textContent='Finding something to do…';
+    let t=null;
+    try{
+      const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),5000);
+      const r=await fetch(TASK_URL,{signal:ctl.signal});
+      clearTimeout(to);
+      if(!r.ok)throw 0;
+      t=(await r.json()).activity;
+    }catch(e){}
+    p.textContent=t||FALLBACK_TASKS[rnd(FALLBACK_TASKS.length)];
+  };
+  add(p,button('NEW TASK',()=>get()));
+  await get();
+}
+
+E.logo.onclick=home;
+E.back.onclick=home;
+E.daily.onclick=openDaily;
+$('#shareBtn').onclick=async()=>{
+  try{
+    if(navigator.share)await navigator.share({title:'IIXI — No Purpose',text:'Find something pointless on IIXI.',url:location.href});
+    else{await navigator.clipboard.writeText(location.href);toast('Link copied.')}
+  }catch(err){}
+};
+document.addEventListener('pointermove',e=>{E.glow.style.left=e.clientX+'px';E.glow.style.top=e.clientY+'px'},{passive:true});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&E.toy.style.display==='block')home();
+});
+home();
+</script>
+</body>
+</html>
